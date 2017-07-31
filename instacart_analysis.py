@@ -23,6 +23,10 @@ def readCSV(filePath, fileName):
 DATA_PATH = "C:/Users/a613274/Kaggle/InstacartAnalysis/data"
 AISLES_FILE = "aisles.csv"
 DEPARTMENT_FILE = "departments.csv"
+ORDER_PRIOR_FILE = "order_products__prior.csv"
+ORDER_TRAIN_FILE = "order_products__train.csv"
+ORDERS_FILE = "orders.csv"
+
 
 """
 aisles_path = os.path.join(DATA_PATH, AISLES_FILE)
@@ -39,3 +43,11 @@ print(aisles_data.head())
 dept_data = readCSV(DATA_PATH, DEPARTMENT_FILE)
 print(dept_data.head())
 
+order_prior = readCSV(DATA_PATH, ORDER_PRIOR_FILE)
+print(order_prior) #32434488
+
+order_train = readCSV(DATA_PATH, ORDER_TRAIN_FILE)
+print(order_train) #1384617
+
+orders_data = readCSV(DATA_PATH, ORDERS_FILE)
+print(orders_data.info()) #3421083

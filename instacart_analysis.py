@@ -48,12 +48,26 @@ aisles_data = readCSV(DATA_PATH, AISLES_FILE)
 dept_data = readCSV(DATA_PATH, DEPARTMENT_FILE)
 #print(dept_data)
 
+#order_products__prior.csv contains previous order contents for all customers. 'reordered' indicates that the customer has a previous order that contains the product.
 order_prior = readCSV(DATA_PATH, ORDER_PRIOR_FILE) #order_id, product_id, add_to_cart_order, reordered
 #print(order_prior) #32434488
 
 order_train = readCSV(DATA_PATH, ORDER_TRAIN_FILE) #order_id, product_id, add_to_cart_order, reordered
 #print(order_train) #1384617
 
+#This file tells to which set (prior, train, test) an order belongs. You are predicting reordered items only for the test set orders. 'order_dow' is the day of week.
 orders_data = readCSV(DATA_PATH, ORDERS_FILE) #order_id, user_id, eval_set, order_number, order_dow, order_hour_of_day, days_since_prior_order
-print(orders_data.info()) #3421083
-print(orders_data.head())
+#print(orders_data.info()) #3421083
+#print(orders_data)
+
+#ToDo : divide orders_data using eval_set as 'prior', 'train', 'test' 
+#print(len(orders_data))
+
+orders_test_data = orders_data.loc[orders_data['eval_set'] == 'test'] #75000
+#print(orders_test_data)
+
+orders_train_data = orders_data.loc[orders_data['eval_set'] == 'train'] #131209
+#print(orders_train_data)
+
+orders_prior_data = orders_data.loc[orders_data['eval_set'] == 'prior'] #3214874
+print(orders_prior_data)

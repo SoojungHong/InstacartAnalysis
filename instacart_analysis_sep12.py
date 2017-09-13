@@ -152,4 +152,18 @@ pd.merge(order_test, orders_test_data, on='order_id', how='outer')
 # list as value (e.g. 'order_id' 'products')
 ordered_order_train_merged = orderedDataFrameWithOrderId(order_train_merged)
 ordered_order_train_merged
-ordered_order_train_merged.groupby('order_id')['product_id'].agg({'list':(lambda x: list(x))})
+ordered_order_train_merged.groupby('order_id')['product_id'].agg({'products':(lambda x: list(x))})
+
+#-------------------------------
+# dataframe with 'order_id', 'product_id', 'user_id', 'product_name'
+# first merge with product data 
+order_train_with_product = pd.merge(order_train_merged, product_data, on='product_id', how='inner') 
+order_train_with_product
+#simply by dropping some columns
+order_train_with_product.drop('aisle_id', axis=1, inplace=True)
+order_train_with_product.drop('add_to_cart_order', axis=1, inplace=True)
+order_train_with_product.drop('order_dow', axis=1, inplace=True)
+order_train_with_product.drop('order_hour_of_day', axis=1, inplace=True)
+order_train_with_product
+test = orderedDataFrameWithOrderId(order_train_with_product)
+test.groupby('order_id')['product_name'].agg({'products':(lambda x : list(x))})

@@ -37,18 +37,41 @@ data_products = "products.csv"
 
 readCSV(path_data, data_aisle)
 readCSV(path_data, data_dept)
-readCSV(path_data, data_order_prior)
-# TODO : which product_id were reordered? 
-
+readCSV(path_data, data_order_prior) #order_id, product_id, add_to_cart_order, reordered
+# TODO_1 : which product_id were reordered? 
 readCSV(path_data, data_order_train)
-readCSV(path_data, data_orders)
-# TODO : what is difference between 'train' and 'prior', is there overrap? 
-# TODO : separate data_orders per eval_sets 
+readCSV(path_data, data_orders) # order_id  user_id eval_set  order_number  order_dow  order_hour_of_day  days_since_prior_order
 
 readCSV(path_data, data_products)
 readCSV(path_data, "sample_submission.csv")
 
+#-------------------------------------------
+# ToDo_1 : which product_id were reordered
+#-------------------------------------------
+order_prior = readCSV(path_data, data_order_train)
+order_prior
+reordered = order_prior.loc[order_prior['reordered'] == 1]
+reordered
+most_reordered_product = reordered.product_id.mode()
+most_reordered_product #24852
 
+product = readCSV(path_data, data_products)
+product.loc[product['product_id'] == 24852] 
 
+#---------------------------------------------------------------------------
+# separate eval_set 'prior', 'train', 'test' from data_orders.csv 
+#---------------------------------------------------------------------------
+all_orders = readCSV(path_data, data_orders)
+all_orders.count() #3421083
 
+prior = all_orders.loc[all_orders['eval_set'] == 'prior'] #loc is to select rows by label
+prior.count() #3214874
+
+train = all_orders.loc[all_orders['eval_set'] == 'train']
+train
+train.count() #131209
+
+test = all_orders.loc[all_orders['eval_set'] == 'test']
+test
+test.count() #75000
 

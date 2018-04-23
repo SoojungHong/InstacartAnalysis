@@ -23,7 +23,7 @@ def csv_reader(file_obj):
 def readCSV(filePath, fileName): 
     csv_path = os.path.join(filePath,fileName)
     return pd.read_csv(csv_path)        
-
+   
 #-------------
 # read data 
 #-------------
@@ -46,11 +46,11 @@ readCSV(path_data, data_products)
 readCSV(path_data, "sample_submission.csv")
 
 #-------------------------------------------
-# ToDo_1 : which product_id were reordered
+# which product_id were reordered
 #-------------------------------------------
-order_prior = readCSV(path_data, data_order_train)
-order_prior
-reordered = order_prior.loc[order_prior['reordered'] == 1]
+order_train = readCSV(path_data, data_order_train)
+order_train
+reordered = order_train.loc[order_train['reordered'] == 1]
 reordered
 most_reordered_product = reordered.product_id.mode()
 most_reordered_product #24852
@@ -66,6 +66,7 @@ all_orders.count() #3421083
 
 prior = all_orders.loc[all_orders['eval_set'] == 'prior'] #loc is to select rows by label
 prior.count() #3214874
+prior.sort_values(by = 'order_id', ascending=True)
 
 train = all_orders.loc[all_orders['eval_set'] == 'train']
 train
@@ -74,4 +75,23 @@ train.count() #131209
 test = all_orders.loc[all_orders['eval_set'] == 'test']
 test
 test.count() #75000
+test.sort_values(by = 'order_id', ascending=True)
 
+#---------------------------------
+# sort data_orders with order_id 
+#---------------------------------
+sorted_all_orders = all_orders.sort_values(by = 'order_id', ascending=True)
+sorted_all_orders
+
+
+#----------------------------------
+# print product info in one order
+#----------------------------------
+data_order_train = readCSV(path_data, data_order_train)
+order_1 = data_order_train[data_order_train['order_id'] == 1]
+
+for id in order_1['product_id']:
+    print(id)
+    print(product.loc[product['product_id'] == id]) 
+    
+        

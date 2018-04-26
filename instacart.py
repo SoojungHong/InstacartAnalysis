@@ -24,6 +24,25 @@ def readCSV(filePath, fileName):
     csv_path = os.path.join(filePath,fileName)
     return pd.read_csv(csv_path)        
    
+
+def printOrderedProduct(productID) : 
+    order = data_order_train[data_order_train['order_id'] == productID]
+    for id in order['product_id']:
+        print(id)
+        print(product.loc[product['product_id'] == id])
+
+     
+def printAllProductsInOrder(orderID, data, productInfo) :
+    #data = readCSV(path_data, data_order_prior)  
+    #productInfo = readCSV(path_data, data_products)
+    order = data[data['order_id'] == orderID] 
+    if(order.empty) : 
+        print("There is no order in this data set")
+    prodList = order['product_id'].tolist()
+    for ord in prodList : 
+        print(productInfo[productInfo["product_id"] == ord].product_name)
+   
+    
 #-------------
 # read data 
 #-------------
@@ -38,7 +57,7 @@ data_products = "products.csv"
 readCSV(path_data, data_aisle)
 readCSV(path_data, data_dept)
 readCSV(path_data, data_order_prior) #order_id, product_id, add_to_cart_order, reordered
-# TODO_1 : which product_id were reordered? 
+ 
 readCSV(path_data, data_order_train)
 readCSV(path_data, data_orders) # order_id  user_id eval_set  order_number  order_dow  order_hour_of_day  days_since_prior_order
 
@@ -50,6 +69,7 @@ readCSV(path_data, "sample_submission.csv")
 #-------------------------------------------
 order_train = readCSV(path_data, data_order_train)
 order_train
+
 reordered = order_train.loc[order_train['reordered'] == 1]
 reordered
 most_reordered_product = reordered.product_id.mode()
@@ -87,11 +107,41 @@ sorted_all_orders
 #----------------------------------
 # print product info in one order
 #----------------------------------
-data_order_train = readCSV(path_data, data_order_train)
-order_1 = data_order_train[data_order_train['order_id'] == 1]
+order_1 = data_order_train[data_order_train['order_id'] == 1] #36, 38
 
 for id in order_1['product_id']:
     print(id)
     print(product.loc[product['product_id'] == id]) 
     
         
+
+printOrderedProduct(36)  
+
+printOrderedProduct(38) 
+
+
+#-----------------------------------------------------------
+# analyse 'data_order_prior' : which products are in one order
+#----------------------------------------------------------- 
+data = readCSV(path_data, data_order_prior)  
+order = data[data['order_id'] == 2] 
+type(order)
+productInfo = readCSV(path_data, data_products)
+productInfo
+#get product_id as list
+prodList = order['product_id'].tolist()
+#for each product_id in the list print what it is 
+prodList
+for ord in prodList : 
+    print(productInfo[productInfo["product_id"] == ord].product_name)
+
+# print product info in an order    
+data = readCSV(path_data, data_order_prior)  
+productInfo = readCSV(path_data, data_products)
+   
+printAllProductsInOrder(5, data, productInfo)
+
+
+# idea 1 : I need NLP package to know the relationship between products in one order
+# idea 2 : I need to know the relationship of ordered product and it's ordered time - is it correlated or not? 
+# idea 3 : customer's preference? 

@@ -41,6 +41,18 @@ def printAllProductsInOrder(orderID, data, productInfo) :
     prodList = order['product_id'].tolist()
     for ord in prodList : 
         print(productInfo[productInfo["product_id"] == ord].product_name)
+
+     
+def printAllProductsInfoInOrder(orderID, data, productInfo, product_dept) :
+    #data = readCSV(path_data, data_order_prior)  
+    #productInfo = readCSV(path_data, data_products)
+    order = data[data['order_id'] == orderID] 
+    if(order.empty) : 
+        print("There is no order in this data set")
+    prodList = order['product_id'].tolist()
+    for ord in prodList : 
+        #print(productInfo[productInfo["product_id"] == ord].product_name)
+        print(product_dept[product_dept["product_id"] == ord])
    
     
 #-------------
@@ -120,9 +132,9 @@ printOrderedProduct(36)
 printOrderedProduct(38) 
 
 
-#-----------------------------------------------------------
+#---------------------------------------------------------------
 # analyse 'data_order_prior' : which products are in one order
-#----------------------------------------------------------- 
+#--------------------------------------------------------------- 
 data = readCSV(path_data, data_order_prior)  
 order = data[data['order_id'] == 2] 
 type(order)
@@ -138,8 +150,60 @@ for ord in prodList :
 # print product info in an order    
 data = readCSV(path_data, data_order_prior)  
 productInfo = readCSV(path_data, data_products)
+productInfo   
+printAllProductsInOrder(9, data, productInfo) #number of products : 49687
+
+
+#------------------------------------------------------
+# product and its department : join product and dept 
+#------------------------------------------------------
+dept = readCSV(path_data, data_dept)
+product_dept = productInfo.merge(dept, on='department_id', how='inner')
+product_dept[product_dept["product_id"] == 1]
+
    
-printAllProductsInOrder(5, data, productInfo)
+printAllProductsInfoInOrder(6, data, productInfo, product_dept)
+
+
+#---------------------
+# get orders by user 
+#---------------------
+orders = readCSV(path_data, data_orders)
+ordersPerUser = orders[orders["user_id"] == 1]
+type(ordersPerUser.order_id)
+
+for ord in ordersPerUser.order_id : 
+    printAllProductsInfoInOrder(ord, data, productInfo, product_dept)
+    print("")
+
+# most frequently ordered product and department
+ordersPerUser = orders[orders["user_id"] == 1]
+ordersPerUser.order_id    
+ 
+for ord_1 in ordersPerUser.order_id : 
+    print(ord_1)
+    printAllProductsInfoInOrder(ord_1, data, productInfo, product_dept)
+    
+    
+     
+def getProductsInfoInOrder(orderID, data, productInfo, product_dept) :
+    #data = readCSV(path_data, data_order_prior)  
+    #productInfo = readCSV(path_data, data_products)
+    order = data[data['order_id'] == orderID] 
+    if(order.empty) : 
+        print("There is no order in this data set")
+    prodList = order['product_id'].tolist()
+    return prodList
+
+user_products = []
+for ord_1 in ordersPerUser.order_id : 
+    print(ord_1)
+    list = getProductsInfoInOrder(ord_1, data, productInfo, product_dept)
+    for p in list : 
+        #print(product[product["product_id"] == p].product_name)  
+        user_products.append(product[product["product_id"] == p].product_name)
+    
+user_products
 
 
 # idea 1 : I need NLP package to know the relationship between products in one order

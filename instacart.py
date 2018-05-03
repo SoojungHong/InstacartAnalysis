@@ -93,8 +93,8 @@ data_order_train = "order_products_train.csv"
 data_orders = "orders.csv"
 data_products = "products.csv"
 
-readCSV(path_data, data_aisle)
-readCSV(path_data, data_dept)
+readCSV(path_data, data_aisle) #133
+readCSV(path_data, data_dept) #20
 readCSV(path_data, data_order_prior) #order_id, product_id, add_to_cart_order, reordered
  
 readCSV(path_data, data_order_train)
@@ -269,10 +269,10 @@ def getProductAndDept(orderId) :
     depart_list = []
 
     for prod in products_in_order : 
-        print(pro_location[pro_location['product_id'] == prod].product_name_y)
+        #print(pro_location[pro_location['product_id'] == prod].product_name_y)
         pName = pro_location[pro_location['product_id'] == prod].product_name_y
         product_list.append(pName)
-        print(pro_location[pro_location['product_id'] == prod].department)
+        #print(pro_location[pro_location['product_id'] == prod].department)
         depName = pro_location[pro_location['product_id'] == prod].department
         depart_list.append(depName)
     
@@ -280,8 +280,45 @@ def getProductAndDept(orderId) :
     print(depart_list)   
     
 
-getProductAndDept(10)
+# from order_id 11, get products and their department
+getProductAndDept(12)
 
+
+def getAisDeptFromProduct(prodId) : 
+    aisle = readCSV(path_data, data_aisle)
+    product_info = readCSV(path_data, data_products)
+
+    product_aisle = pd.merge(aisle, product_info, on='aisle_id')
+    dept = readCSV(path_data, data_dept) 
+
+    product_aisle_dept = pd.merge(product_aisle, dept, on='department_id')
+    p = product_aisle_dept[product_aisle_dept['product_id'] == prodId]
+    #info = p['aisle'] + str(" - ") + p['product_name'] + str(" - ") + p['department']
+    info = p['aisle'] + str(" - ") + p['department']
+    
+    return info
+
+
+getAisDeptFromProduct(20)
+
+#---------------------------------------------------
+# given order, list product list and aisle list
+#---------------------------------------------------
+def getAislePerOrder(orderId) : 
+    dop = readCSV(path_data, data_order_prior)
+    aisle = readCSV(path_data, data_aisle)
+    product_info = readCSV(path_data, data_products)
+    order_given = dop[dop['order_id'] == orderId]
+    products_in_order = order_given['product_id']
+    
+    aisle_list = []
+    for i in products_in_order : 
+        ai = product_info[product_info['product_id'] == i].aisle_id
+        aisle_list.append(aisle[aisle['aisle_id'] == ai.values[0]].aisle)
+
+    return aisle_list    
+
+getAislePerOrder(4)
 
 # idea 1 : I need NLP package to know the relationship between products in one order
 # idea 2 : I need to know the relationship of ordered product and it's ordered time - is it correlated or not? 

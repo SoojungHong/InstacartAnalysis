@@ -61,10 +61,27 @@ def printAllProductsInOrder(orderID, data, productInfo) :
         products.append(prod)
     return products
 
+
 def readCSV(filePath, fileName): 
     csv_path = os.path.join(filePath,fileName)
     return pd.read_csv(csv_path)        
-       
+
+
+def getFullDefinition(product_name):
+    word1 = product_name.values[0]
+    product_name = TextBlob(word1)
+    #wordsLeng = len(product_name.words)
+    for subPro in product_name.words :
+        print(Word(subPro).definitions)
+        
+
+def getFullDefinitionFromLastword(product_name):
+    word1 = product_name.values[0]
+    product_name = TextBlob(word1)
+    wordsLeng = len(product_name.words)
+    print(product_name.words[wordsLeng-1])
+    print(Word(product_name.words[wordsLeng-1]).definitions)        
+        
 
 path_data = "/Users/soojunghong/Documents/safariML/ML_python/kaggle/InstacartAnalysis/data/"
 data_aisle = "aisles.csv"
@@ -81,7 +98,9 @@ productInfo
 products = printAllProductsInOrder(9, data, productInfo) #number of products : 49687
 products
 
-#for each product, get definition
+#------------------------------------
+# for each product, get definition
+#------------------------------------
 from textblob import Word
 from textblob.wordnet import VERB
 word = Word("octopus")
@@ -103,22 +122,27 @@ len(product_name.words)
 product_name.words[1]
 word2 = Word(product_name.words[2])
 word2.definitions
-
-def getFullDefinition(product_name):
-    word1 = product_name.values[0]
-    product_name = TextBlob(word1)
-    #wordsLeng = len(product_name.words)
-    for subPro in product_name.words :
-        print(Word(subPro).definitions)
+word2.synsets
 
 products[1]    
 getFullDefinition(products[1])    
 
-def getFullDefinitionFromLastword(product_name):
-    word1 = product_name.values[0]
-    product_name = TextBlob(word1)
-    wordsLeng = len(product_name.words)
-    print(Word(product_name.words[wordsLeng-1]).definitions)
 
-products[2]
-getFullDefinitionFromLastword(products[2])
+products[3]
+getFullDefinitionFromLastword(products[3])
+
+# similarity between definition
+from textblob.wordnet import Synset
+octopus = Synset(products[1].values[0]+'.n.01')
+shrimp = Synset('shrimp.n.03')
+octopus.path_similarity(shrimp)
+
+prod = TextBlob(products[1].values[0])
+prod.words
+num = len(prod.words)
+num
+Word(prod.words[num-1]).definitions 
+Word(prod.words[num-1]).synsets  
+mush1 = Synset('mushroom.n.01')
+mush2 = Synset('mushroom.n.02')
+mush1.path_similarity(mush2)

@@ -80,9 +80,38 @@ def getFullDefinitionFromLastword(product_name):
     product_name = TextBlob(word1)
     wordsLeng = len(product_name.words)
     print(product_name.words[wordsLeng-1])
-    print(Word(product_name.words[wordsLeng-1]).definitions)        
-        
+    print(Word(product_name.words[wordsLeng-1]).definitions)    
 
+
+
+def getProductDescOfAdjective(prod) : 
+    productName = prod.values[0]
+    productName
+    product_name = TextBlob(productName)
+    #product_name_len = len(product_name.words)
+    product_adj = product_name.words[0]
+    adj = Word(product_adj)
+    adjDesc = adj.definitions
+
+    return adjDesc
+
+
+
+def getProductDescOfNoun(prod) : 
+    productName = prod.values[0]
+    productName
+    product_name = TextBlob(productName)
+    product_name_len = len(product_name.words)
+    product_noun = product_name.words[product_name_len - 1]
+    noun = Word(product_noun)
+    nounDesc = noun.definitions
+
+    return nounDesc
+        
+        
+#---------
+# data 
+#---------        
 path_data = "/Users/soojunghong/Documents/safariML/ML_python/kaggle/InstacartAnalysis/data/"
 data_aisle = "aisles.csv"
 data_dept = "departments.csv"
@@ -103,30 +132,29 @@ products
 #------------------------------------
 from textblob import Word
 from textblob.wordnet import VERB
-word = Word("octopus")
-word.synsets
-Word("hack").get_synsets(pos=VERB)
-Word("octopus").definitions
 
-p = products[0]
-p
-p.values[0]
-p.values[0]
-word1 = Word(p.values[0])
-word1.definitions
-
-#get last word in product_name
-product_name = TextBlob(word1)
+productName = p.values[0]
+productName
+product_name = TextBlob(productName)
 type(product_name.words)
-len(product_name.words)
-product_name.words[1]
-word2 = Word(product_name.words[2])
-word2.definitions
-word2.synsets
+product_name_len = len(product_name.words)
+product_name_len
+product_adj = product_name.words[0]
+product_adj
+product_noun = product_name.words[product_name_len - 1]
+product_noun
+# ToDo : if the product name contains, comma, the noun should be string before the comma
 
+adj = Word(product_adj)
+adj.definitions
+
+noun = Word(product_noun)
+noun.definitions
+
+# test of getting description of adjective of product and description of noun in product name
 products[1]    
 getFullDefinition(products[1])    
-
+getProductDescOfNoun(products[1])
 
 products[3]
 getFullDefinitionFromLastword(products[3])

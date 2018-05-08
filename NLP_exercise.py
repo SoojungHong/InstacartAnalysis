@@ -107,8 +107,71 @@ def getProductDescOfNoun(prod) :
     nounDesc = noun.definitions
 
     return nounDesc
+
+
+
+def getProductFirstDescOfNoun(prod) : 
+    productName = prod.values[0]
+    productName
+    product_name = TextBlob(productName)
+    product_name_len = len(product_name.words)
+    product_noun = product_name.words[product_name_len - 1]
+    noun = Word(product_noun)
+    nounDesc = noun.definitions
+    firstDesc = ""
+    if(len(nounDesc) > 0) :
+        firstDesc = nounDesc[0]
+  
+    return firstDesc
+
+
         
-        
+"""
+def mostFrequentlyPurchasedByUser(userID) : 
+    from collections import Counter
+    product = readCSV(path_data, data_products)
+    orders = readCSV(path_data, data_orders)
+    dept = readCSV(path_data, data_dept)
+    product_dept = productInfo.merge(dept, on='department_id', how='inner')
+    user_products_id = []
+    ordersPerUser = orders[orders["user_id"] == userID]
+    for ordr in ordersPerUser.order_id : 
+        #print(ordr)
+        currlist = getProductsInfoInOrder(ordr, data, productInfo, product_dept)
+        for p in currlist : 
+            #print(product[product["product_id"] == p].product_name)  
+            user_products_id.append(p)
+    #print(user_products_id)
+    c = Counter(user_products_id)
+    mostfreq_id = c.most_common(1)
+    #print(mostfreq_id)
+    mostfreq =product.loc[product['product_id'] == mostfreq_id[0][0]] 
+    return mostfreq
+"""   
+
+
+def mostFrequentlyPurchasedByUser(userID, product, orders, dept) : 
+    from collections import Counter
+#    product = readCSV(path_data, data_products)
+#    orders = readCSV(path_data, data_orders)
+#    dept = readCSV(path_data, data_dept)
+    product_dept = productInfo.merge(dept, on='department_id', how='inner')
+    user_products_id = []
+    ordersPerUser = orders[orders["user_id"] == userID]
+    for ordr in ordersPerUser.order_id : 
+        #print(ordr)
+        currlist = getProductsInfoInOrder(ordr, data, productInfo, product_dept)
+        for p in currlist : 
+            #print(product[product["product_id"] == p].product_name)  
+            user_products_id.append(p)
+    #print(user_products_id)
+    c = Counter(user_products_id)
+    mostfreq_id = c.most_common(1)
+    #print(mostfreq_id)
+    mostfreq =product.loc[product['product_id'] == mostfreq_id[0][0]] 
+    return mostfreq
+
+  
 #---------
 # data 
 #---------        
@@ -120,20 +183,21 @@ data_order_train = "order_products_train.csv"
 data_orders = "orders.csv"
 data_products = "products.csv"
 
+readCSV(path_data, data_orders)
 readCSV(path_data, data_products)
 data = readCSV(path_data, data_order_prior)  
 productInfo = readCSV(path_data, data_products)
 productInfo   
 products = printAllProductsInOrder(9, data, productInfo) #number of products : 49687
 products
-
+products[0]
 #------------------------------------
 # for each product, get definition
 #------------------------------------
 from textblob import Word
 from textblob.wordnet import VERB
 
-productName = p.values[0]
+productName = products[0].values[0]
 productName
 product_name = TextBlob(productName)
 type(product_name.words)
@@ -154,11 +218,17 @@ noun.definitions
 # test of getting description of adjective of product and description of noun in product name
 products[1]    
 getFullDefinition(products[1])    
-getProductDescOfNoun(products[1])
+descNoun = getProductDescOfNoun(products[1])
+len(descNoun)
+descNoun[0]
+
+descAdj = getProductDescOfAdjective(products[1])
+descAdj[0]
 
 products[3]
 getFullDefinitionFromLastword(products[3])
 
+"""
 # similarity between definition
 from textblob.wordnet import Synset
 octopus = Synset(products[1].values[0]+'.n.01')
@@ -174,3 +244,29 @@ Word(prod.words[num-1]).synsets
 mush1 = Synset('mushroom.n.01')
 mush2 = Synset('mushroom.n.02')
 mush1.path_similarity(mush2)
+"""
+
+#---------------------------------------------------------------------------
+# for all users, get most frequently purchased products, 
+#                and get definitions of products and extract relevant words 
+#---------------------------------------------------------------------------
+# userID starts from 1 to 206209
+     
+product = readCSV(path_data, data_products)
+orders = readCSV(path_data, data_orders)
+dept = readCSV(path_data, data_dept)
+
+for userID in range(1, 10):#206209) : 
+    print("userID : " + str(userID))
+    mProduct = mostFrequentlyPurchasedByUser(userID, product, orders, dept).product_name
+    print(getProductFirstDescOfNoun(mProduct))
+    
+
+#----------------------
+# Create User Profile
+#----------------------
+import pandas as pd
+d = {'userID' : [1,2,3], 'userProfileName': ['organic', 'lifegoods', 'meatperson'], 'shoppingHour' : ['morning', 'afternoon', 'evening']}
+df = pd.DataFrame(data=d)
+df
+

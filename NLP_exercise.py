@@ -115,9 +115,11 @@ def getProductFirstDescOfNoun(prod) :
     productName
     product_name = TextBlob(productName)
     product_name_len = len(product_name.words)
-    product_noun = product_name.words[product_name_len - 1]
-    noun = Word(product_noun)
-    nounDesc = noun.definitions
+    if(product_name_len > 0) :
+            product_noun = product_name.words[product_name_len - 1]
+            noun = Word(product_noun)
+            nounDesc = noun.definitions
+    
     firstDesc = ""
     if(len(nounDesc) > 0) :
         firstDesc = nounDesc[0]
@@ -150,7 +152,7 @@ def mostFrequentlyPurchasedByUser(userID) :
 """   
 
 
-def mostFrequentlyPurchasedByUser(userID, product, orders, dept) : 
+def threeMostFrequentlyPurchasedByUser(userID, product, orders, dept) : 
     from collections import Counter
 #    product = readCSV(path_data, data_products)
 #    orders = readCSV(path_data, data_orders)
@@ -161,16 +163,73 @@ def mostFrequentlyPurchasedByUser(userID, product, orders, dept) :
     for ordr in ordersPerUser.order_id : 
         #print(ordr)
         currlist = getProductsInfoInOrder(ordr, data, productInfo, product_dept)
+        #print(currlist)
         for p in currlist : 
             #print(product[product["product_id"] == p].product_name)  
             user_products_id.append(p)
     #print(user_products_id)
     c = Counter(user_products_id)
-    mostfreq_id = c.most_common(1)
-    #print(mostfreq_id)
+    mostfreq_id = c.most_common(1) # 1 most frequent 
+    mostfreq_id1 = c.most_common(2) # 2 most frequent
+    mostfreq_id2 = c.most_common(3) # 3 most frequent
+    
+    threeMost = []
+    mostfreq =product.loc[product['product_id'] == mostfreq_id[0][0]] 
+    threeMost.append(mostfreq) 
+    secondfreq =product.loc[product['product_id'] == mostfreq_id1[1][0]] 
+    threeMost.append(secondfreq) 
+    thirdfreq =product.loc[product['product_id'] == mostfreq_id2[2][0]] 
+    threeMost.append(thirdfreq)
+    return threeMost
+
+
+
+def MostFrequentlyPurchasedByUser(userID, product, orders, dept) : 
+    from collections import Counter
+#    product = readCSV(path_data, data_products)
+#    orders = readCSV(path_data, data_orders)
+#    dept = readCSV(path_data, data_dept)
+    product_dept = productInfo.merge(dept, on='department_id', how='inner')
+    user_products_id = []
+    ordersPerUser = orders[orders["user_id"] == userID]
+    for ordr in ordersPerUser.order_id : 
+        #print(ordr)
+        currlist = getProductsInfoInOrder(ordr, data, productInfo, product_dept)
+        #print(currlist)
+        for p in currlist : 
+            #print(product[product["product_id"] == p].product_name)  
+            user_products_id.append(p)
+    #print(user_products_id)
+    c = Counter(user_products_id)
+    mostfreq_id = c.most_common(1) # 1 most frequent 
+    print(mostfreq_id)
+    
     mostfreq =product.loc[product['product_id'] == mostfreq_id[0][0]] 
     return mostfreq
 
+
+
+def getMostFreqWordsInProductDefinition(userID, product, orders, dept):
+    #from collections import Counter
+    user_products_names = []
+    product_dept = productInfo.merge(dept, on='department_id', how='inner')
+    ordersPerUser = orders[orders["user_id"] == userID]
+    for ordr in ordersPerUser.order_id : 
+        #print(ordr)
+        currlist = getProductsInfoInOrder(ordr, data, productInfo, product_dept)
+        for p in currlist : 
+            #print(product[product["product_id"] == p].product_name)  
+            pName = product[product["product_id"] == p].product_name
+            user_products_names.append(pName)
+        #print(user_products_names)
+        product_names_desc = []
+        for n in user_products_names : 
+            product_names_desc.append(getProductFirstDescOfNoun(n))
+    
+    #get most frequent words from all descriptions 
+    eg = TextBlob(product_names_desc[0])
+    print(eg.noun_phrases) 
+    return product_names_desc           
   
 #---------
 # data 
@@ -247,7 +306,7 @@ mush1.path_similarity(mush2)
 """
 
 #---------------------------------------------------------------------------
-# for all users, get most frequently purchased products, 
+# for all users, get 3 most frequently purchased products, 
 #                and get definitions of products and extract relevant words 
 #---------------------------------------------------------------------------
 # userID starts from 1 to 206209
@@ -256,11 +315,13 @@ product = readCSV(path_data, data_products)
 orders = readCSV(path_data, data_orders)
 dept = readCSV(path_data, data_dept)
 
-for userID in range(1, 10):#206209) : 
+for userID in range(1, 2):#206209) : 
     print("userID : " + str(userID))
-    mProduct = mostFrequentlyPurchasedByUser(userID, product, orders, dept).product_name
-    print(getProductFirstDescOfNoun(mProduct))
-    
+    mProduct = threeMostFrequentlyPurchasedByUser(userID, product, orders, dept)#.product_name
+    #print(mProduct[2].product_name)
+    #print(getProductFirstDescOfNoun(mProduct[2].product_name))
+    print(getMostFreqWordsInProductDefinition(userID, product, orders, dept))
+
 
 #----------------------
 # Create User Profile

@@ -25,11 +25,17 @@ from sklearn.preprocessing import normalize;
 import pickle;
 
 
-data = pd.read_csv('/Users/soojunghong/Documents/safariML/ML_python/kaggle/InstacartAnalysis/abcnews-date-text.csv', error_bad_lines=False)
+allData = pd.read_csv('/Users/soojunghong/Documents/safariML/ML_python/kaggle/InstacartAnalysis/abcnews-date-text.csv', error_bad_lines=False)
+type(allData)
+
+# get only 1000 rows of dataframe, since it takes too much time to remove stop words
+nRows = 1000
+data = allData[0:nRows]
 data
 
-data_text = data[['headline_text']]; #we only need text column from the original data
+data_text = data[['headline_text']]; # we only need text column from the original data
 data_text = data_text.astype('str')
+data_text
 
 for idx in range(len(data_text)):
     #remove stop words
@@ -42,19 +48,32 @@ for idx in range(len(data_text)):
 #save data because it takes a while to remove stop words 
 pickle.dump(data_text, open('data_text.dat', 'wb'))      
 
+data_text # array of string that not stop words 
 #get words as an array for LDA input
+data_text.iloc[0:]
+type(data_text.iloc[0:].values) # narray type 
+
+for value in data_text.iloc[0:].values:
+    print(value)
+
 train_headlines = [value[0] for value in data_text.iloc[0:].values];  
+train_headlines
 
 num_topics = 10
 id2word = gensim.corpora.Dictionary(train_headlines)
-corpus = [id2word.doc2bow(text) for text in train_headlines];
+corpus = [id2word.doc2bow(text) for text in train_headlines] #doc2bow : The function doc2bow() simply counts the number of occurrences of each distinct word, converts the word to its integer word id and returns the result as a sparse vector.
+
 lda = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=num_topics)
 
 def get_lda_topics(model, num_topics):
-    word_dict = {}
+    word_dict = []
     for i in range(num_topics):
         words = model.show_topic(i, topn=20)
-        word_dict['Topic # ' + '{:02d}'.format(i+1)] = [i[0] for i in words]
+        
+        for i in words : 
+            print i[0]
+            word_dict.append(i[0])
+        #word_dict['Topic # ' + '{:02d}'.format(i+1)] = [i[0] for i in words]; #format(i+1) is to start topic index from 1 (since 0 is CS people' index )
     return pd.DataFrame(word_dict)
 
-get_lda_topics()              
+get_lda_topics(lda, num_topics)   

@@ -26,7 +26,7 @@ from sklearn.datasets import fetch_20newsgroups
 
 dataset = fetch_20newsgroups(shuffle=True, random_state=1, remove=('headers', 'footers', 'quotes'))
 documents = dataset.data
-
+documents
 
 
 #------------------------------
@@ -81,8 +81,7 @@ def getFullDefinitionFromLastword(product_name):
     wordsLeng = len(product_name.words)
     print(product_name.words[wordsLeng-1])
     print(Word(product_name.words[wordsLeng-1]).definitions)    
-
-
+    return Word(product_name.words[wordsLeng-1]).definitions[0]
 
 def getProductDescOfAdjective(prod) : 
     productName = prod.values[0]
@@ -114,18 +113,27 @@ def getProductFirstDescOfNoun(prod) :
     productName = prod.values[0]
     productName
     product_name = TextBlob(productName)
-    product_name_len = len(product_name.words)
-    if(product_name_len > 0) :
-            product_noun = product_name.words[product_name_len - 1]
-            noun = Word(product_noun)
-            nounDesc = noun.definitions
     
-    firstDesc = ""
-    if(len(nounDesc) > 0) :
-        firstDesc = nounDesc[0]
-  
-    return firstDesc
-
+    print(product_name.words)
+    
+    
+    """
+    wordList = []
+    # line = line.replace(';', ':')
+    for w in product_name.words : 
+        w = w.decode.encode('utf-8')
+        w = w.replace('-', '')
+        wordList.append(w)
+     
+    product_name_len = len(wordList)
+    print(product_name_len)
+    print(wordList)
+    product_noun = wordList[product_name_len - 1]
+    noun = Word(product_noun)
+    nounDesc = noun.definitions
+    print(nounDesc[0].decode.encode('utf-8')) 
+    return nounDesc[0].decode.encode('utf-8') 
+    """
 
         
 """
@@ -212,6 +220,7 @@ def MostFrequentlyPurchasedByUser(userID, product, orders, dept) :
 def getMostFreqWordsInProductDefinition(userID, product, orders, dept):
     #from collections import Counter
     user_products_names = []
+    product_names_desc = []
     product_dept = productInfo.merge(dept, on='department_id', how='inner')
     ordersPerUser = orders[orders["user_id"] == userID]
     for ordr in ordersPerUser.order_id : 
@@ -222,15 +231,28 @@ def getMostFreqWordsInProductDefinition(userID, product, orders, dept):
             pName = product[product["product_id"] == p].product_name
             user_products_names.append(pName)
         #print(user_products_names)
-        product_names_desc = []
+        #product_names_desc = []
         for n in user_products_names : 
             product_names_desc.append(getProductFirstDescOfNoun(n))
     
     #get most frequent words from all descriptions 
-    eg = TextBlob(product_names_desc[0])
-    print(eg.noun_phrases) 
+    #eg = TextBlob(product_names_desc[1])
+    #print(eg.noun_phrases) 
+    
+    all_nouns = []
+    for desc in product_names_desc : 
+        tmp_desc = TextBlob(desc)
+        #print(tmp_desc.noun_phrases)
+        for phr in tmp_desc.noun_phrases : 
+            all_nouns.append(phr)
+    #print(type(all_nouns)) #list - probably WordList
+    from collections import Counter
+    c = Counter(all_nouns)   
+    print(c.most_common(1))
+    
     return product_names_desc           
   
+    
 #---------
 # data 
 #---------        
@@ -245,11 +267,14 @@ data_products = "products.csv"
 readCSV(path_data, data_orders)
 readCSV(path_data, data_products)
 data = readCSV(path_data, data_order_prior)  
+data
 productInfo = readCSV(path_data, data_products)
 productInfo   
 products = printAllProductsInOrder(9, data, productInfo) #number of products : 49687
 products
 products[0]
+
+
 #------------------------------------
 # for each product, get definition
 #------------------------------------
@@ -287,6 +312,100 @@ descAdj[0]
 products[3]
 getFullDefinitionFromLastword(products[3])
 
+
+#-------------------------------
+# Bag-of-Words in Scikit-learn 
+#-------------------------------
+from sklearn.datasets import fetch_20newsgroups
+
+dataset = fetch_20newsgroups(shuffle=True, random_state=1, remove=('headers', 'footers', 'quotes'))
+documents = dataset.data
+documents
+
+from sklearn.feature_extraction.text import CountVectorizer 
+vectorizer = CountVectorizer()
+A = vectorizer.fit_transform(documents)
+print(A)
+
+#list all terms and associated dictionary which maps each unique term to a corresponding column in the matrix
+terms = vectorizer.get_feature_names()
+len(terms) #how many terms in the column 
+
+vocab = vectorizer.vocabulary_
+vocab["world"] #which column corresponds to a term 
+
+#--------------------------------------------------------
+# TF-IDF (term frequency, Inversed Document Frequency)
+#--------------------------------------------------------
+from sklearn.feature_extraction.text import TfidfVectorizer
+vectorizer = TfidfVectorizer()
+A = vectorizer.fit_transform(documents)
+print(A)
+
+from sklearn import decomposition
+k = 10
+model = decomposition.NMF(n_components = k, init = "nndsvd") # initialize with SVD
+W = model.fit_transform(A)
+H = model.components_
+
+print(W)
+print(H)
+
+#--------------------------------------------------------------------------
+# idea : get description of all products that user ordered and find topic 
+#--------------------------------------------------------------------------
+import pandas as pd;
+import numpy as np;
+import scipy as sp;
+import sklearn;
+import sys;
+from nltk.corpus import stopwords;
+import nltk;
+from gensim.models import ldamodel
+import gensim.corpora;
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer;
+from sklearn.decomposition import NMF;
+from sklearn.preprocessing import normalize;
+import pickle;
+
+def get_lda_topics(model, num_topics):
+    word_dict = []
+    for i in range(num_topics):
+        words = model.show_topic(i, topn=20)
+        
+        for i in words : 
+            print i[0]
+            word_dict.append(i[0])
+        #word_dict['Topic # ' + '{:02d}'.format(i+1)] = [i[0] for i in words]; #format(i+1) is to start topic index from 1 (since 0 is CS people' index )
+    return pd.DataFrame(word_dict)
+
+
+def findTopic(data_text) : #data_text is dataframe 
+    #data_text = data[['headline_text']]; # we only need text column from the original data
+    data_text = data_text.astype('str')
+    data_text
+
+    for idx in range(len(data_text)):
+        #remove stop words
+        data_text.iloc[idx]['favorite_product'] = [word for word in data_text.iloc[idx]['favorite_product'].split(' ') if word not in stopwords.words()]
+    
+        #print logs to monitor output
+        if idx % 1000 == 0:
+            sys.stdout.write('\rc = ' + str(idx) + ' / ' + str(len(data_text)));
+
+    for value in data_text.iloc[0:].values:
+        print(value)
+
+    train_headlines = [value[0] for value in data_text.iloc[0:].values];  
+    train_headlines
+
+    num_topics = 10
+    id2word = gensim.corpora.Dictionary(train_headlines)
+    corpus = [id2word.doc2bow(text) for text in train_headlines] #doc2bow : The function doc2bow() simply counts the number of occurrences of each distinct word, converts the word to its integer word id and returns the result as a sparse vector.
+
+    lda = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=num_topics)
+    get_lda_topics(lda, num_topics) 
+
 """
 # similarity between definition
 from textblob.wordnet import Synset
@@ -315,14 +434,42 @@ product = readCSV(path_data, data_products)
 orders = readCSV(path_data, data_orders)
 dept = readCSV(path_data, data_dept)
 
-for userID in range(1, 2):#206209) : 
+ 
+# create dataframe 
+import pandas as pd
+import numpy as np
+df = pd.DataFrame(columns=('userID', 'favorite_product'))
+df
+
+
+userID = 1
+mProduct = threeMostFrequentlyPurchasedByUser(userID, product, orders, dept)
+type(mProduct)
+defPROD = getFullDefinitionFromLastword(mProduct[1].product_name) #products[1]) 
+type(defPROD)
+
+for userID in range(1,5) : 
+    mProduct = threeMostFrequentlyPurchasedByUser(userID, product, orders, dept)
+    defPROD = getFullDefinitionFromLastword(mProduct[1].product_name) #products[1]) 
+    df = df.append({'userID':userID, 'favorite_product':defPROD}, ignore_index=True)
+
+findTopic(df)  
+ 
+#df.append({'userID':1, 'favorite_product':defPROD}, ignore_index=True)
+
+df
+#-------------------
+# ToDo : Fix error 
+#-------------------
+for userID in range(5, 6):#206209) : 
     print("userID : " + str(userID))
     mProduct = threeMostFrequentlyPurchasedByUser(userID, product, orders, dept)#.product_name
+    print(mProduct)
     #print(mProduct[2].product_name)
-    #print(getProductFirstDescOfNoun(mProduct[2].product_name))
-    print(getMostFreqWordsInProductDefinition(userID, product, orders, dept))
-
-
+    print(getProductFirstDescOfNoun(mProduct[2].product_name))
+    getMostFreqWordsInProductDefinition(userID, product, orders, dept)
+    
+    
 #----------------------
 # Create User Profile
 #----------------------

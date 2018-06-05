@@ -76,11 +76,15 @@ def getFullDefinition(product_name):
         
 
 def getFullDefinitionFromLastword(product_name):
+    #print(type(product_name)) #series type
+    print(product_name.size)
+    if(product_name.size == 0) : 
+        return Word("")
     word1 = product_name.values[0]
     product_name = TextBlob(word1)
     wordsLeng = len(product_name.words)
-    print(product_name.words[wordsLeng-1])
-    print(Word(product_name.words[wordsLeng-1]).definitions)    
+    #print(product_name.words[wordsLeng-1])
+    #print(Word(product_name.words[wordsLeng-1]).definitions)    
     return Word(product_name.words[wordsLeng-1]).definitions[0]
 
 def getProductDescOfAdjective(prod) : 
@@ -374,37 +378,40 @@ def get_lda_topics(model, num_topics):
         words = model.show_topic(i, topn=20)
         
         for i in words : 
-            print i[0]
+            #print i[0]
             word_dict.append(i[0])
         #word_dict['Topic # ' + '{:02d}'.format(i+1)] = [i[0] for i in words]; #format(i+1) is to start topic index from 1 (since 0 is CS people' index )
     return pd.DataFrame(word_dict)
 
 
-def findTopic(data_text) : #data_text is dataframe 
-    #data_text = data[['headline_text']]; # we only need text column from the original data
+def findTopic(data) : #data_text is dataframe 
+    data_text = data[['favorite_product_desc']]; # we only need text column from the original data
     data_text = data_text.astype('str')
-    data_text
-
+   
     for idx in range(len(data_text)):
         #remove stop words
-        data_text.iloc[idx]['favorite_product'] = [word for word in data_text.iloc[idx]['favorite_product'].split(' ') if word not in stopwords.words()]
+        data_text.iloc[idx]['favorite_product_desc'] = [word for word in data_text.iloc[idx]['favorite_product_desc'].split(' ') if word not in stopwords.words()]
     
         #print logs to monitor output
         if idx % 1000 == 0:
             sys.stdout.write('\rc = ' + str(idx) + ' / ' + str(len(data_text)));
-
+    
+    documents = []
     for value in data_text.iloc[0:].values:
-        print(value)
+        # add into list 'documents'
+        documents.append(value)
 
     train_headlines = [value[0] for value in data_text.iloc[0:].values];  
-    train_headlines
-
-    num_topics = 10
+    
+    num_topics = 5#10
     id2word = gensim.corpora.Dictionary(train_headlines)
+
     corpus = [id2word.doc2bow(text) for text in train_headlines] #doc2bow : The function doc2bow() simply counts the number of occurrences of each distinct word, converts the word to its integer word id and returns the result as a sparse vector.
 
     lda = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=num_topics)
-    get_lda_topics(lda, num_topics) 
+    ret = get_lda_topics(lda, num_topics) 
+    print(ret)
+    return ret
 
 """
 # similarity between definition
@@ -424,40 +431,53 @@ mush2 = Synset('mushroom.n.02')
 mush1.path_similarity(mush2)
 """
 
+"""
 #---------------------------------------------------------------------------
 # for all users, get 3 most frequently purchased products, 
 #                and get definitions of products and extract relevant words 
 #---------------------------------------------------------------------------
+"""
 # userID starts from 1 to 206209
-     
+
+#-------------------------------------------------------------------------------
+# for each user, get their 3 most frequently purchased products 
+# and find out the topic out of it, this topic will be user profile's name
+#-------------------------------------------------------------------------------     
 product = readCSV(path_data, data_products)
 orders = readCSV(path_data, data_orders)
 dept = readCSV(path_data, data_dept)
-
  
-# create dataframe 
+# create dataframe df 
 import pandas as pd
 import numpy as np
-df = pd.DataFrame(columns=('userID', 'favorite_product'))
+df = pd.DataFrame(columns=('userID', 'favorite_product_desc'))
 df
-
 
 userID = 1
 mProduct = threeMostFrequentlyPurchasedByUser(userID, product, orders, dept)
-type(mProduct)
-defPROD = getFullDefinitionFromLastword(mProduct[1].product_name) #products[1]) 
-type(defPROD)
+type(mProduct) #list type
+for p in mProduct : 
+    #print(p.product_name)
+    #print(getFullDefinitionFromLastword(p.product_name))
+    defPROD = getFullDefinitionFromLastword(p.product_name) #products[1]) 
+    if(defPROD != '') :
+        df = df.append({'userID':userID, 'favorite_product_desc':defPROD}, ignore_index=True)
+        
 
+df    
+topics = findTopic(df)
+type(topics)
+topics.iloc[0]
+"""
 for userID in range(1,5) : 
     mProduct = threeMostFrequentlyPurchasedByUser(userID, product, orders, dept)
     defPROD = getFullDefinitionFromLastword(mProduct[1].product_name) #products[1]) 
     df = df.append({'userID':userID, 'favorite_product':defPROD}, ignore_index=True)
 
 findTopic(df)  
+"""
  
-#df.append({'userID':1, 'favorite_product':defPROD}, ignore_index=True)
 
-df
 #-------------------
 # ToDo : Fix error 
 #-------------------

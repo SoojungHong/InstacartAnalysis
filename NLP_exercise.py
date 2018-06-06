@@ -371,6 +371,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer;
 from sklearn.decomposition import NMF;
 from sklearn.preprocessing import normalize;
 import pickle;
+import re;
 
 def get_lda_topics(model, num_topics):
     word_dict = []
@@ -390,6 +391,7 @@ def findTopic(data) : #data_text is dataframe
    
     for idx in range(len(data_text)):
         #remove stop words
+        # org #data_text.iloc[idx]['favorite_product_desc'] = [word for word in data_text.iloc[idx]['favorite_product_desc'].split(' ') if word not in stopwords.words()]
         data_text.iloc[idx]['favorite_product_desc'] = [word for word in data_text.iloc[idx]['favorite_product_desc'].split(' ') if word not in stopwords.words()]
     
         #print logs to monitor output
@@ -398,19 +400,25 @@ def findTopic(data) : #data_text is dataframe
     
     documents = []
     for value in data_text.iloc[0:].values:
-        # add into list 'documents'
+        # add into list 'documents', value is narray 
+      
+        # value is narray
+        for i in range(len(value)):   #print(value[i][0])
+            for j in range(len(value[i])) :
+                value[i][j] = re.sub('[^a-zA-Z0-9-_*.]', '', value[i][j])
+        
         documents.append(value)
 
     train_headlines = [value[0] for value in data_text.iloc[0:].values];  
     
-    num_topics = 5#10
+    num_topics = 10
     id2word = gensim.corpora.Dictionary(train_headlines)
 
     corpus = [id2word.doc2bow(text) for text in train_headlines] #doc2bow : The function doc2bow() simply counts the number of occurrences of each distinct word, converts the word to its integer word id and returns the result as a sparse vector.
 
     lda = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=num_topics)
-    ret = get_lda_topics(lda, num_topics) 
-    print(ret)
+    ret = get_lda_topics(lda, num_topics) #ret is list type
+    print(ret) 
     return ret
 
 """
@@ -468,14 +476,6 @@ df
 topics = findTopic(df)
 type(topics)
 topics.iloc[0]
-"""
-for userID in range(1,5) : 
-    mProduct = threeMostFrequentlyPurchasedByUser(userID, product, orders, dept)
-    defPROD = getFullDefinitionFromLastword(mProduct[1].product_name) #products[1]) 
-    df = df.append({'userID':userID, 'favorite_product':defPROD}, ignore_index=True)
-
-findTopic(df)  
-"""
  
 
 #-------------------

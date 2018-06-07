@@ -77,15 +77,19 @@ def getFullDefinition(product_name):
 
 def getFullDefinitionFromLastword(product_name):
     #print(type(product_name)) #series type
-    print(product_name.size)
+    #print(product_name)
+    #print(product_name.size)
     if(product_name.size == 0) : 
-        return Word("")
+        return Word("None")
     word1 = product_name.values[0]
     product_name = TextBlob(word1)
     wordsLeng = len(product_name.words)
-    #print(product_name.words[wordsLeng-1])
-    #print(Word(product_name.words[wordsLeng-1]).definitions)    
+    defs = Word(product_name.words[wordsLeng-1]).definitions
+    if (len(defs) == 0) :
+       return Word("None") #there is no definition
+      
     return Word(product_name.words[wordsLeng-1]).definitions[0]
+
 
 def getProductDescOfAdjective(prod) : 
     productName = prod.values[0]
@@ -195,6 +199,48 @@ def threeMostFrequentlyPurchasedByUser(userID, product, orders, dept) :
     return threeMost
 
 
+
+def tenMostFrequentlyPurchasedByUser(userID, product, orders, dept) : 
+    from collections import Counter
+#    product = readCSV(path_data, data_products)
+#    orders = readCSV(path_data, data_orders)
+#    dept = readCSV(path_data, data_dept)
+    product_dept = productInfo.merge(dept, on='department_id', how='inner')
+    user_products_id = []
+    ordersPerUser = orders[orders["user_id"] == userID]
+    for ordr in ordersPerUser.order_id : 
+        #print(ordr)
+        currlist = getProductsInfoInOrder(ordr, data, productInfo, product_dept)
+        #print(currlist)
+        for p in currlist : 
+            #print(product[product["product_id"] == p].product_name)  
+            user_products_id.append(p)
+    #print(user_products_id)
+    c = Counter(user_products_id)
+    tenMost = []
+    if (len(c) > 10) : 
+        for i in range(1,11) : 
+            prod = c.most_common(i)
+            tenMost.append(product.loc[product['product_id'] == prod[i-1][0]])
+    else : 
+        return "None"
+    return tenMost
+    
+    """    
+    mostfreq_id = c.most_common(1) # 1 most frequent 
+    mostfreq_id1 = c.most_common(2) # 2 most frequent
+    mostfreq_id2 = c.most_common(3) # 3 most frequent
+    
+    threeMost = []
+    mostfreq =product.loc[product['product_id'] == mostfreq_id[0][0]] 
+    threeMost.append(mostfreq) 
+    secondfreq =product.loc[product['product_id'] == mostfreq_id1[1][0]] 
+    threeMost.append(secondfreq) 
+    thirdfreq =product.loc[product['product_id'] == mostfreq_id2[2][0]] 
+    threeMost.append(thirdfreq)
+    return threeMost
+    """
+   
 
 def MostFrequentlyPurchasedByUser(userID, product, orders, dept) : 
     from collections import Counter
@@ -418,7 +464,7 @@ def findTopic(data) : #data_text is dataframe
 
     lda = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=num_topics)
     ret = get_lda_topics(lda, num_topics) #ret is list type
-    print(ret) 
+    #print(ret) 
     return ret
 
 """
@@ -478,6 +524,68 @@ type(topics)
 topics.iloc[0]
  
 
+#-----------------------------------------------------------------------------------
+# Find out topic from all users by analyzing 10 most frequently purchased products
+# total number of users : 206209
+#-----------------------------------------------------------------------------------
+userID = 4
+mProduct = tenMostFrequentlyPurchasedByUser(userID, product, orders, dept)
+mProduct
+for p in mProduct : 
+    #print(p.product_name)
+    #print(getFullDefinitionFromLastword(p.product_name))
+    defPROD = getFullDefinitionFromLastword(p.product_name) #products[1]) 
+    if(defPROD != '') :
+        df = df.append({'userID':userID, 'favorite_product_desc':defPROD}, ignore_index=True)
+        
+df
+# topics.iloc[0] 
+
+from collections import Counter
+topics = findTopic(df)
+myList = topics.iloc[:, 0]
+topicList = myList.tolist()
+c = Counter(topicList)
+mostfreq_id = c.most_common(1) # 1 most frequent - #instead of the 0th topic, get the top most frequent topic
+mostfreq_id
+
+    
+#------------------------------------------------------------------------------------------------
+# Based on customer's top 10 most frequent purchased product, topic modeling the topic of user
+#------------------------------------------------------------------------------------------------
+def topicOfUser(userID, product, orders, dept) :
+    # create dataframe df 
+    import pandas as pd
+    df = pd.DataFrame(columns=('userID', 'favorite_product_desc'))
+    
+    mProduct = tenMostFrequentlyPurchasedByUser(userID, product, orders, dept)
+    if(mProduct != "None") : 
+        for p in mProduct : 
+            defPROD = getFullDefinitionFromLastword(p.product_name) #products[1]) 
+            if(defPROD != '') :
+                df = df.append({'userID':userID, 'favorite_product_desc':defPROD}, ignore_index=True)
+    
+        from collections import Counter
+        topics = findTopic(df)
+        myList = topics.iloc[:, 0]
+        topicList = myList.tolist()
+        c = Counter(topicList)
+        mostfreq_id = c.most_common(1) # 1 most frequent - #instead of the 0th topic, get the top most frequent topic
+        return mostfreq_id
+ 
+    else :
+        return "None"
+    
+# find out topic of all customers and put it in their profile    
+product = readCSV(path_data, data_products)
+orders = readCSV(path_data, data_orders)
+dept = readCSV(path_data, data_dept)
+
+#ToDo
+for i in range(0, 100): #:206209) : 
+    topicOfUser(i, product, orders, dept)    
+
+"""
 #-------------------
 # ToDo : Fix error 
 #-------------------
@@ -488,8 +596,9 @@ for userID in range(5, 6):#206209) :
     #print(mProduct[2].product_name)
     print(getProductFirstDescOfNoun(mProduct[2].product_name))
     getMostFreqWordsInProductDefinition(userID, product, orders, dept)
-    
-    
+"""    
+
+"""    
 #----------------------
 # Create User Profile
 #----------------------
@@ -497,4 +606,4 @@ import pandas as pd
 d = {'userID' : [1,2,3], 'userProfileName': ['organic', 'lifegoods', 'meatperson'], 'shoppingHour' : ['morning', 'afternoon', 'evening']}
 df = pd.DataFrame(data=d)
 df
-
+"""

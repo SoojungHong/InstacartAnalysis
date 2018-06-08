@@ -38,12 +38,13 @@ import os
 import pandas as pd
      
 def getProductsInfoInOrder(orderID, data, productInfo, product_dept) :
-    #data = readCSV(path_data, data_order_prior)  
-    #productInfo = readCSV(path_data, data_products)
     order = data[data['order_id'] == orderID] 
+    prodList = []
     if(order.empty) : 
-        print("There is no order in this data set")
-    prodList = order['product_id'].tolist()
+        #print("[Warning] There is no order in this data set!!!")
+        prodList.append(None)
+    else :     
+        prodList = order['product_id'].tolist()
     return prodList
 
      
@@ -202,19 +203,17 @@ def threeMostFrequentlyPurchasedByUser(userID, product, orders, dept) :
 
 def tenMostFrequentlyPurchasedByUser(userID, product, orders, dept) : 
     from collections import Counter
-#    product = readCSV(path_data, data_products)
-#    orders = readCSV(path_data, data_orders)
-#    dept = readCSV(path_data, data_dept)
     product_dept = productInfo.merge(dept, on='department_id', how='inner')
     user_products_id = []
     ordersPerUser = orders[orders["user_id"] == userID]
     for ordr in ordersPerUser.order_id : 
         #print(ordr)
         currlist = getProductsInfoInOrder(ordr, data, productInfo, product_dept)
-        #print(currlist)
-        for p in currlist : 
-            #print(product[product["product_id"] == p].product_name)  
-            user_products_id.append(p)
+        print(currlist)
+        if(len(currlist) != 0) : 
+            for p in currlist : 
+                #print(product[product["product_id"] == p].product_name)  
+                user_products_id.append(p)
     #print(user_products_id)
     c = Counter(user_products_id)
     tenMost = []
@@ -441,8 +440,8 @@ def findTopic(data) : #data_text is dataframe
         data_text.iloc[idx]['favorite_product_desc'] = [word for word in data_text.iloc[idx]['favorite_product_desc'].split(' ') if word not in stopwords.words()]
     
         #print logs to monitor output
-        if idx % 1000 == 0:
-            sys.stdout.write('\rc = ' + str(idx) + ' / ' + str(len(data_text)));
+        #if idx % 1000 == 0:
+        #    sys.stdout.write('\rc = ' + str(idx) + ' / ' + str(len(data_text)));
     
     documents = []
     for value in data_text.iloc[0:].values:
@@ -582,21 +581,9 @@ orders = readCSV(path_data, data_orders)
 dept = readCSV(path_data, data_dept)
 
 #ToDo
-for i in range(0, 100): #:206209) : 
-    topicOfUser(i, product, orders, dept)    
-
-"""
-#-------------------
-# ToDo : Fix error 
-#-------------------
-for userID in range(5, 6):#206209) : 
-    print("userID : " + str(userID))
-    mProduct = threeMostFrequentlyPurchasedByUser(userID, product, orders, dept)#.product_name
-    print(mProduct)
-    #print(mProduct[2].product_name)
-    print(getProductFirstDescOfNoun(mProduct[2].product_name))
-    getMostFreqWordsInProductDefinition(userID, product, orders, dept)
-"""    
+for i in range(1, 20): #:206209) : 
+    print(topicOfUser(i, product, orders, dept))    
+   
 
 """    
 #----------------------

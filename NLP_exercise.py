@@ -83,9 +83,11 @@ def getFullDefinitionFromLastword(product_name):
     if(product_name.size == 0) : 
         return Word("None")
     word1 = product_name.values[0]
-    product_name = TextBlob(word1)
+    product_name = TextBlob(word1.decode('utf-8')) #you have to decode 
     wordsLeng = len(product_name.words)
-    defs = Word(product_name.words[wordsLeng-1]).definitions
+    decodedProd = (product_name.words[wordsLeng-1]).decode('utf-8')
+    defs = Word(decodedProd).definitions
+    #defs = Word(product_name.words[wordsLeng-1]).definitions
     if (len(defs) == 0) :
        return Word("None") #there is no definition
       
@@ -581,7 +583,7 @@ orders = readCSV(path_data, data_orders)
 dept = readCSV(path_data, data_dept)
 
 #ToDo
-for i in range(1, 20): #:206209) : 
+for i in range(1, 100): #:206209) : 
     print(topicOfUser(i, product, orders, dept))    
    
 

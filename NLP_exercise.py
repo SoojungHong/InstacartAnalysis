@@ -211,7 +211,6 @@ def tenMostFrequentlyPurchasedByUser(userID, product, orders, dept) :
     for ordr in ordersPerUser.order_id : 
         #print(ordr)
         currlist = getProductsInfoInOrder(ordr, data, productInfo, product_dept)
-        print(currlist)
         if(len(currlist) != 0) : 
             for p in currlist : 
                 #print(product[product["product_id"] == p].product_name)  
@@ -498,33 +497,7 @@ mush1.path_similarity(mush2)
 # for each user, get their 3 most frequently purchased products 
 # and find out the topic out of it, this topic will be user profile's name
 #-------------------------------------------------------------------------------     
-product = readCSV(path_data, data_products)
-orders = readCSV(path_data, data_orders)
-dept = readCSV(path_data, data_dept)
- 
-# create dataframe df 
-import pandas as pd
-import numpy as np
-df = pd.DataFrame(columns=('userID', 'favorite_product_desc'))
-df
-
-userID = 1
-mProduct = threeMostFrequentlyPurchasedByUser(userID, product, orders, dept)
-type(mProduct) #list type
-for p in mProduct : 
-    #print(p.product_name)
-    #print(getFullDefinitionFromLastword(p.product_name))
-    defPROD = getFullDefinitionFromLastword(p.product_name) #products[1]) 
-    if(defPROD != '') :
-        df = df.append({'userID':userID, 'favorite_product_desc':defPROD}, ignore_index=True)
-        
-
-df    
-topics = findTopic(df)
-type(topics)
-topics.iloc[0]
- 
-
+a
 #-----------------------------------------------------------------------------------
 # Find out topic from all users by analyzing 10 most frequently purchased products
 # total number of users : 206209
@@ -583,16 +556,28 @@ orders = readCSV(path_data, data_orders)
 dept = readCSV(path_data, data_dept)
 
 #ToDo
-for i in range(1, 100): #:206209) : 
+for i in range(1, 10): #:206209) : 
     print(topicOfUser(i, product, orders, dept))    
    
 
-"""    
-#----------------------
-# Create User Profile
-#----------------------
+    
+#--------------------------------------------------------------
+# Create User Profile : <userID> <userProfileName> <shopHour>
+#--------------------------------------------------------------
 import pandas as pd
-d = {'userID' : [1,2,3], 'userProfileName': ['organic', 'lifegoods', 'meatperson'], 'shoppingHour' : ['morning', 'afternoon', 'evening']}
-df = pd.DataFrame(data=d)
+#d = {'userID' : [1,2,3], 'userProfileName': ['organic', 'lifegoods', 'meatperson'], 'shoppingHour' : ['morning', 'afternoon', 'evening']}
+#df = pd.DataFrame(data=d)
+#df
+
+# initializa dataframe 
+d = {'userID':[], 'userProfileName':[]}
+df = pd.DataFrame(data = d)
 df
-"""
+
+for i in range(1,100): 
+    row = pd.DataFrame({'userID':[i], 'userProfileName':[topicOfUser(i, product, orders, dept)]})
+    df = df.append(row)
+
+df    
+#df = df.append(row2)
+#df

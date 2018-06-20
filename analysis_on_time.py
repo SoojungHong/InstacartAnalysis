@@ -147,8 +147,8 @@ for ordr in ordersPerUser.order_id :
 # mid days of week : Wed - Fri (2, 3, 4)
 # weekend shopper : Sat - Sun (5, 6)      
 #--------------------------------------------------------------------
-def getShoppingDOW(userID) : 
-    orders = readCSV(path_data, data_orders)
+orders = readCSV(path_data, data_orders)
+def getShoppingDOW(userID, orders) : 
     #product = readCSV(path_data, data_products)
     #data = readCSV(path_data, data_order_prior)  
     #productInfo = readCSV(path_data, data_products) 
@@ -168,24 +168,25 @@ def getShoppingDOW(userID) :
     for dow in order_dow : 
         if (dow >= 0 & dow <=2) : 
             count_early_days = count_early_days + 1
-            if (dow > 2 & dow <= 4) : 
-                count_mid_days = count_mid_days + 1
-                if (dow >=5 ):
-                    count_weekend = count_weekend + 1
+        if (dow > 2 & dow <= 4) : 
+            count_mid_days = count_mid_days + 1
+        if (dow >=5 ):
+            count_weekend = count_weekend + 1
     
     if(max(count_early_days, count_mid_days, count_weekend) == count_early_days) : 
         print("early week shopper")
         shopDow = "early week shopper"
-        if(max(count_early_days, count_mid_days, count_weekend) == count_mid_days) : 
-            print("mid shopper")
-            shopDow = "mid shopper"
-            if(max(count_early_days, count_mid_days, count_weekend) == count_weekend) :
-                print("weekend shopper")
-                shopDow = "weekend shopper"
+    if(max(count_early_days, count_mid_days, count_weekend) == count_mid_days) : 
+        print("mid shopper")
+        shopDow = "mid shopper"
+    if(max(count_early_days, count_mid_days, count_weekend) == count_weekend) :
+        print("weekend shopper")
+        shopDow = "weekend shopper"
      
     return shopDow           
     
-getShoppingDOW(88)
+getShoppingDOW(188, orders)
+
 #---------------------------------------------------------------------
 # Find out which hour is the most frequent hour customer do shopping
 # early-bird : 5am - 9am (5 - 9)
@@ -194,9 +195,55 @@ getShoppingDOW(88)
 # evening shopper : 7pm - 9pm (19 - 21)    
 #---------------------------------------------------------------------
 
-order_hour = ordersPerUser['order_hour_of_day']
-order_hour
-showHistogram(order_hour, 0, 25, 0, 10)
+orders = readCSV(path_data, data_orders)
+def getShoppingHour(userID, orders) : 
+    #product = readCSV(path_data, data_products)
+    #data = readCSV(path_data, data_order_prior)  
+    #productInfo = readCSV(path_data, data_products) 
+    #dept = readCSV(path_data, data_dept)
+    
+    ordersPerUser = orders[orders["user_id"] == userID]
+    ordersPerUser
+
+    order_hour = ordersPerUser['order_hour_of_day']
+    order_hour
+    
+    showHistogram(order_hour, 0, 25, 0, 10)
+
+    count_early_bird = 0 
+    count_daytime_shopper = 0
+    count_evening_shopper = 0
+    count_night_owl = 0
+    shopHour = ""
+    
+    for hr in order_hour : 
+        if (hr >= 5 & hr <= 9) : 
+            count_early_bird = count_early_bird + 1
+        if (hr > 22 & hr <= 4) : 
+            count_night_owl = count_night_owl + 1
+        if (hr >= 10 & hr <= 18 ):
+            count_daytime_shopper = count_daytime_shopper + 1
+        if (hr >= 19 & hr <= 21) : 
+            count_evening_shopper = count_evening_shopper + 1
+    
+    maxCount = max(count_early_bird, count_night_owl, count_daytime_shopper, count_evening_shopper ) 
+    if( maxCount == count_early_bird) : 
+        print("early bird shopper")
+        shopHour = "early bird shopper"
+    if(maxCount == count_night_owl) : 
+        print("night owl shopper")
+        shopHour = "night owl shopper"
+    if(maxCount == count_daytime_shopper) :
+        print("day shopper")
+        shopHour = "day shopper"
+    else :
+        print("evening shopper")
+        shopHour = "evening shopper"
+                
+    return shopHour           
+    
+for i in range(1,20) : 
+    getShoppingHour(i, orders)
 
 
 

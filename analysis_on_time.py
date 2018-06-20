@@ -147,42 +147,45 @@ for ordr in ordersPerUser.order_id :
 # mid days of week : Wed - Fri (2, 3, 4)
 # weekend shopper : Sat - Sun (5, 6)      
 #--------------------------------------------------------------------
-orders = readCSV(path_data, data_orders)
-product = readCSV(path_data, data_products)
-data = readCSV(path_data, data_order_prior)  
-productInfo = readCSV(path_data, data_products) 
-dept = readCSV(path_data, data_dept)
-
-userID = 5
-ordersPerUser = orders[orders["user_id"] == userID]
-ordersPerUser
-
-order_dow = ordersPerUser['order_dow']
-order_dow
-showHistogram(order_dow, 0, 6, 0, 10)
-count_early_days = 0 
-count_mid_days = 0
-count_weekend = 0 
-for dow in order_dow : 
-    if (dow >= 0 & dow <=2) : 
-        count_early_days = count_early_days + 1
-    if (dow > 2 & dow <= 4) : 
-        count_mid_days = count_mid_days + 1
-    if (dow >=5 ):
-        count_weekend = count_weekend + 1
-        
-count_early_days
-count_mid_days
-count_weekend
-
-if(max(count_early_days, count_mid_days, count_weekend) == count_early_days) : 
-    print("early week shopper")
-if(max(count_early_days, count_mid_days, count_weekend) == count_mid_days) : 
-    print("mid shopper")
-if(max(count_early_days, count_mid_days, count_weekend) == count_weekend) :
-    print("weekend shopper")
+def getShoppingDOW(userID) : 
+    orders = readCSV(path_data, data_orders)
+    #product = readCSV(path_data, data_products)
+    #data = readCSV(path_data, data_order_prior)  
+    #productInfo = readCSV(path_data, data_products) 
+    #dept = readCSV(path_data, data_dept)
     
+    ordersPerUser = orders[orders["user_id"] == userID]
+    ordersPerUser
 
+    order_dow = ordersPerUser['order_dow']
+    order_dow
+    showHistogram(order_dow, 0, 6, 0, 10)
+    count_early_days = 0 
+    count_mid_days = 0
+    count_weekend = 0 
+    shopDow = ""
+    
+    for dow in order_dow : 
+        if (dow >= 0 & dow <=2) : 
+            count_early_days = count_early_days + 1
+            if (dow > 2 & dow <= 4) : 
+                count_mid_days = count_mid_days + 1
+                if (dow >=5 ):
+                    count_weekend = count_weekend + 1
+    
+    if(max(count_early_days, count_mid_days, count_weekend) == count_early_days) : 
+        print("early week shopper")
+        shopDow = "early week shopper"
+        if(max(count_early_days, count_mid_days, count_weekend) == count_mid_days) : 
+            print("mid shopper")
+            shopDow = "mid shopper"
+            if(max(count_early_days, count_mid_days, count_weekend) == count_weekend) :
+                print("weekend shopper")
+                shopDow = "weekend shopper"
+     
+    return shopDow           
+    
+getShoppingDOW(88)
 #---------------------------------------------------------------------
 # Find out which hour is the most frequent hour customer do shopping
 # early-bird : 5am - 9am (5 - 9)

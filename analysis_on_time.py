@@ -105,7 +105,7 @@ dept = readCSV(path_data, data_dept)
 product_dept = productInfo.merge(dept, on='department_id', how='inner')  
 
 user_products_id = []
-ordersPerUser = orders[orders["user_id"] == 1] #userID]
+ordersPerUser = orders[orders["user_id"] == 100] #userID]
 ordersPerUser
 
 # print products in one order (example, 2539329 )
@@ -115,14 +115,6 @@ order_dow
 print(ordersPerUser['order_hour_of_day'])
 order_hour = ordersPerUser['order_hour_of_day']
 order_hour
-
-printAllProductsInfoInOrder(431534, data, productInfo, product_dept) 
-
-# get all products in all orders of given user (example, get all products info from user 1)
-for ordr in ordersPerUser.order_id : 
-    print(ordr)
-    printAllProductsInfoInOrder(ordr, data, productInfo, product_dept) 
-    
 
     
 #-------------------------------------------------
@@ -134,16 +126,74 @@ showHistogram(order_dow, 0, 6, 0, 10)
 showHistogram(order_hour, 0, 25, 0, 10)
 
 
+
+
+
+printAllProductsInfoInOrder(431534, data, productInfo, product_dept) 
+
+# get all products in all orders of given user (example, get all products info from user 1)
+for ordr in ordersPerUser.order_id : 
+    print(ordr)
+    printAllProductsInfoInOrder(ordr, data, productInfo, product_dept) 
+    
+
+
+
 #ToDo : 
 #--------------------------------------------------------------------
 # Find out when is the most frequent customer shoppting day in week
+# if most of order happens in particular days 
+# early days of week : Mon-Wed (0, 1, 2)
+# mid days of week : Wed - Fri (2, 3, 4)
+# weekend shopper : Sat - Sun (5, 6)      
 #--------------------------------------------------------------------
+orders = readCSV(path_data, data_orders)
+product = readCSV(path_data, data_products)
+data = readCSV(path_data, data_order_prior)  
+productInfo = readCSV(path_data, data_products) 
+dept = readCSV(path_data, data_dept)
 
+userID = 5
+ordersPerUser = orders[orders["user_id"] == userID]
+ordersPerUser
 
+order_dow = ordersPerUser['order_dow']
+order_dow
+showHistogram(order_dow, 0, 6, 0, 10)
+count_early_days = 0 
+count_mid_days = 0
+count_weekend = 0 
+for dow in order_dow : 
+    if (dow >= 0 & dow <=2) : 
+        count_early_days = count_early_days + 1
+    if (dow > 2 & dow <= 4) : 
+        count_mid_days = count_mid_days + 1
+    if (dow >=5 ):
+        count_weekend = count_weekend + 1
+        
+count_early_days
+count_mid_days
+count_weekend
+
+if(max(count_early_days, count_mid_days, count_weekend) == count_early_days) : 
+    print("early week shopper")
+if(max(count_early_days, count_mid_days, count_weekend) == count_mid_days) : 
+    print("mid shopper")
+if(max(count_early_days, count_mid_days, count_weekend) == count_weekend) :
+    print("weekend shopper")
+    
 
 #---------------------------------------------------------------------
 # Find out which hour is the most frequent hour customer do shopping
+# early-bird : 5am - 9am (5 - 9)
+# night owl : 10pm - 4am (22 - 4)
+# day time shopper : 10am - 6pm (10 - 18)
+# evening shopper : 7pm - 9pm (19 - 21)    
 #---------------------------------------------------------------------
+
+order_hour = ordersPerUser['order_hour_of_day']
+order_hour
+showHistogram(order_hour, 0, 25, 0, 10)
 
 
 
